@@ -69,6 +69,13 @@ _Vá para o firefox e digite *about:config* e pressione enter._
 ## PARA DESATIVAR
      cd torando
     ./toroff.sh
+
+## BONUS! EDITE SEU BASHRC/FISH OU OUTRO... 
+     nano .bashrc
+### INCLUA NO FINAL:
+     alias torando="./torando.sh"
+     alias toroff="./offtor.sh"
+
 ## ISTO É TUDO! 
 ![anon](https://github.com/cristiancmoises/torando/assets/86272521/d02ee4f6-83ee-4a43-abd9-a11c9e37c77d)
 
