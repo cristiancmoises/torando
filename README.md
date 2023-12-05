@@ -67,8 +67,9 @@ _Go to the firefox and digit *about:config* then press enter._
      cd torando
     ./toroff.sh
 
-## BONUS! EDIT YOUR BASHRC/FISH OR WHATEVER... INCLUDE:
-  
+## BONUS! EDIT YOUR BASHRC/FISH OR WHATEVER... 
+     nano .bashrc
+### INCLUDE:
      alias torando="./torando.sh"
      alias toroff="./offtor.sh"
 
