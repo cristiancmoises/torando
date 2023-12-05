@@ -45,11 +45,12 @@ E cole este código no final:
 
     nano /etc/resolv.conf
 
+## REMOVA TUDO E COLE
+    nameserver 127.0.0.1
+
 ## POR SEGURANÇA
     chattr +i /etc/resolv.conf
-
-## REMOVA TUDO E COLE
-    nameserver 127.0.0.1 
+ 
     
 ## FIREFOX CONFIG - SEM VAZAMENTO DE DNS
 _Vá para o firefox e digite *about:config* e pressione enter._
