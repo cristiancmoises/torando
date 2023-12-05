@@ -66,6 +66,13 @@ _Go to the firefox and digit *about:config* then press enter._
 ## FOR DISABLE
      cd torando
     ./toroff.sh
+
+## BONUS! EDIT YOUR BASHRC/FISH OR WHATEVER... INCLUDE:
+  
+     alias torando="./torando.sh"
+     alias toroff="./offtor.sh"
+
+    
 ## THAT'S ALL! 
 ![anon](https://github.com/cristiancmoises/torando/assets/86272521/9df06b1d-cff7-4c02-a6fb-c7add5ef27e3)
 
