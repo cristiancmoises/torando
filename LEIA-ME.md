@@ -44,7 +44,10 @@ E cole este código no final:
 ## AGORA EDITE O RESOLV.CONF
 
     nano /etc/resolv.conf
-    
+
+## POR SEGURANÇA
+    chattr +i /etc/resolv.conf
+
 ## REMOVA TUDO E COLE
     nameserver 127.0.0.1 
     
