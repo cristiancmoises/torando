@@ -78,7 +78,10 @@ _Go to the firefox and digit *about:config* then press enter._
      alias torando="./torando.sh"
      alias toroff="./offtor.sh"
 
-    
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=cristiancmoises/torando&type=Date)](https://star-history.com/#cristiancmoises/torando&Date)
+
 ## THAT'S ALL! 
 ![anon](https://github.com/cristiancmoises/torando/assets/86272521/9df06b1d-cff7-4c02-a6fb-c7add5ef27e3)
 
