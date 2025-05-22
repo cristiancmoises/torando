@@ -1,4 +1,7 @@
 # TORANDO - TOR VPN
+### Torando is a simple script to route all your Linux system traffic through the Tor network.
+### Fast, easy, and with DNS leak protection.
+
 <p align="center"> 
 <img src="https://github.com/cristiancmoises/torando/assets/86272521/045451b7-545a-4798-9df8-980b122b829d"  width="640"  height="420" />
 <center/>
@@ -6,6 +9,17 @@
          
 > <img src="https://github.com/cristiancmoises/torando/assets/86272521/241a6f7f-ba74-4e8d-95f7-9b783ee824fd"  width="30"  height="30" /> 🇧🇷 Para o tutorial em português clique [aqui](https://github.com/cristiancmoises/torando/blob/main/LEIA-ME.md)
 _____________________________________________
+# ⚙️ Features
+
+🔐 Full system traffic anonymization via Tor
+
+🧅 DNS leak prevention
+
+🖥️ SOCKS proxy ready
+
+🦊 Firefox config tweaks for extra security
+
+📜 Easy toggle with torando.sh and toroff.sh
 ## Do you need the tor package to run this. Instal tor first!
 > DEBIAN:
               
