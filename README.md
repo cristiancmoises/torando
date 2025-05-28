@@ -3,12 +3,15 @@
 ### Fast, easy, and with DNS leak protection.
 
 <p align="center"> 
-<img src="https://github.com/cristiancmoises/torando/assets/86272521/045451b7-545a-4798-9df8-980b122b829d"  width="640"  height="420" />
+<img src="https://github.com/cristiancmoises/torando/assets/86272521/045451b7-545a-4798-9df8-980b122b829d"  width="840"  height="620" />
 <center/>
 <p/>
          
 > <img src="https://github.com/cristiancmoises/torando/assets/86272521/241a6f7f-ba74-4e8d-95f7-9b783ee824fd"  width="30"  height="30" /> 🇧🇷 Para o tutorial em português clique [aqui](https://github.com/cristiancmoises/torando/blob/main/LEIA-ME.md)
-_____________________________________________
+
+### For more privacy use:
+<img src="https://github.com/cristiancmoises/brutefox/assets/86272521/15afb340-af3f-4c3b-b029-d80ab0da59a0" href="https://github.com/cristiancmoises/brutefox" width="350"  height="180" />
+
 # ⚙️ Features
 
 🔐 Full system traffic anonymization via Tor
