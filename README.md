@@ -103,6 +103,14 @@ _Go to the firefox and digit *about:config* then press enter._
 
 Go to network settings > Manual proxy configuration: torando
 
+### VPN Recommendation for System-Wide Privacy:
+<img src="https://mullvad.net/press/MullvadVPN_logo_Round_RGB_Color_positive.png" width=30% height=30%>
+
+[Mullvad VPN](https://mullvad.net/en)
+- **Purpose**: Masks your IP address, a key fingerprinting component, protecting all internet traffic.
+- **Steps**: Visit [Mullvad VPN](https://mullvad.net/en), generate an account, pay €5/month, download the app, and connect to a server.
+
+
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=cristiancmoises/torando&type=Date)](https://star-history.com/#cristiancmoises/torando&Date)
