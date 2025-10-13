@@ -97,10 +97,6 @@ _Go to the firefox and digit *about:config* then press enter._
      alias torando="./torando.sh"
      alias toroff="./offtor.sh"
 
-## Tor configuration on [Zen Browser](https://zen-browser.app/):
-![image](https://github.com/user-attachments/assets/a2e12641-a15b-49f9-aaaf-8fd14782788c)
-
-
 Go to network settings > Manual proxy configuration: torando
 
 ### VPN Recommendation for System-Wide Privacy:
