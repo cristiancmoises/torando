@@ -41,6 +41,8 @@
           
          zypper install tor torsocks -y
 
+> FreeBSD: [Tutorial Here](https://github.com/cristiancmoises/torando/blob/main/freebsd.md)
+
 ## FIRST STEP - CHANGE THE CONFIG
 Clone the repo and open the _torando.sh_ and change USERAQUI for your username.
 Do the same on _toroff.sh_
