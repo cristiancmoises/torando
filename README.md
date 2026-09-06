@@ -1,119 +1,171 @@
-# TORANDO - TOR VPN
-### Torando is a simple script to route all your Linux system traffic through the Tor network.
-### Fast, easy, and with DNS leak protection.
+# Torando
 
-<p align="center"> 
-<img src="https://github.com/cristiancmoises/torando/assets/86272521/045451b7-545a-4798-9df8-980b122b829d"  width="840"  height="620" />
-<center/>
-<p/>
-         
-> <img src="https://github.com/cristiancmoises/torando/assets/86272521/241a6f7f-ba74-4e8d-95f7-9b783ee824fd"  width="30"  height="30" /> 🇧🇷 Para o tutorial em português clique [aqui](https://github.com/cristiancmoises/torando/blob/main/LEIA-ME.md)
+Torando routes one Linux user's IPv4 TCP connections through Tor and blocks
+other outgoing traffic for that user. It is a small command-line tool for
+people who already run Tor and want to turn routing on and off without editing
+firewall commands by hand.
 
-### For more privacy use:
-<a href="https://github.com/cristiancmoises/brutefox" target="_blank">
-<img src="https://github.com/cristiancmoises/brutefox/assets/86272521/15afb340-af3f-4c3b-b029-d80ab0da59a0" width="350" height="220" alt="BrutefoX"/></a>
+**[Torando-Gui](https://github.com/cristiancmoises/torando-gui) is the GUI for
+Torando.** It provides a desktop interface, connection status, exit checks and
+settings. It installs its own daemon; you do not need to install these scripts
+first. Use one controller at a time for a given user.
 
+[Português](LEIA-ME.md) · [FreeBSD](freebsd.md) · [Security](SECURITY.md)
 
-# ⚙️ Features
+## What's new in 2.0.0
 
-🔐 Full system traffic anonymization via Tor
+You can now select a user with `--user`, check the current rules with `--status`,
+and run enable or disable more than once without accumulating rules. Torando
+uses its own chains, preserves unrelated firewall rules, and blocks outgoing
+IPv6 for the selected user. If a firewall change fails after a blocking guard
+has been installed, the guard stays in place until you recover or disable it.
 
-🧅 DNS leak prevention
+This replaces the old scripts containing `USERAQUI`. Read the upgrade notes
+below before switching an existing setup.
 
-🖥️ SOCKS proxy ready
+## Before you start
 
-🦊 Firefox config tweaks for extra security
+You need Linux, Bash, `iptables`, `ip6tables` unless IPv6 is disabled at kernel boot,
+`flock` from util-linux, `pgrep` from procps, and a Tor service running under a separate account.
+Run the scripts through `sudo` from your normal login. Root and known Tor
+service accounts cannot be selected as the target.
 
-📜 Easy toggle with torando.sh and toroff.sh
-## Do you need the tor package to run this. Instal tor first!
-> DEBIAN:
-              
-          apt update && apt upgrade && apt install tor torsocks -y
-> GENTOO: 
-       
-          emerge tor torsocks
+On Debian or Ubuntu, install the packages with:
 
-> ARCH: 
-          
-         pacman tor torsocks -Syu
+```sh
+sudo apt update
+sudo apt install tor iptables util-linux procps
+```
 
-> OPENSUSE: 
-          
-         zypper install tor torsocks -y
+Install the equivalent packages with your distribution's package manager on
+other systems. These scripts do not install or start Tor for you.
 
-> FreeBSD: [Tutorial Here](https://github.com/cristiancmoises/torando/blob/main/freebsd.md)
+## Configure Tor
 
-## FIRST STEP - CHANGE THE CONFIG
-Clone the repo and open the _torando.sh_ and change USERAQUI for your username.
-Do the same on _toroff.sh_
+Edit your service's `torrc` (usually `/etc/tor/torrc`) and add or update these
+settings once:
 
-    git clone https://github.com/cristiancmoises/torando
-    cd torando
-    chmod +x *
-    nano torando.sh
-    
-## EDIT TORRC
+```text
+SocksPort 127.0.0.1:9050
+TransPort 127.0.0.1:9040
+DNSPort 127.0.0.1:5353
+VirtualAddrNetworkIPv4 10.192.0.0/10
+AutomapHostsOnResolve 1
+```
 
-    nano   /etc/tor/torrc
+Keep the listeners on loopback. Check the configuration, then restart Tor using
+your distribution's service manager. For a typical systemd installation:
 
-Then paste in the end:
+```sh
+sudo tor --verify-config -f /etc/tor/torrc
+sudo systemctl restart tor
+```
 
-    VirtualAddrNetwork 10.192.0.0/10
-    AutomapHostsOnResolve 1
-    TransPort 9040
-    DNSPort 53
+Tor's DNS listener handles UDP A, AAAA and PTR queries. The
+[Tor manual](https://man.freebsd.org/cgi/man.cgi?manpath=freebsd-ports&query=tor&sektion=1)
+explains the listener and virtual-address options.
 
-## NOW EDIT THE RESOLV.CONF
+Torando redirects the selected user's IPv4 UDP queries on port 53 to the local
+Tor DNS listener, including queries addressed to a loopback DNS stub. It does
+not edit `/etc/resolv.conf` or make files immutable. DNS requests delegated over
+a Unix socket to a resolver running as another user are outside these per-user
+rules; check how your system resolves names before relying on this setup.
 
-    nano /etc/resolv.conf
+## Connect, check and disconnect
 
-## FOR SECURITY
+Close applications with existing network connections before enabling. Existing
+UDP DNS sockets can retain a conntrack mapping to your old resolver, including a
+loopback stub. Reopen the applications after the rules are installed.
 
-    chattr +i /etc/resolv.conf
-    
-## THEN REMOVE ALL AND PASTE
-    nameserver 127.0.0.1 
-    
-## FIREFOX CONFIG - NO DNS LEAK
-_Go to the firefox and digit *about:config* then press enter._
-                
-           about:config
+```sh
+git clone https://github.com/cristiancmoises/torando.git
+cd torando
+./torando.sh --version
+sudo ./torando.sh
+sudo ./torando.sh --status
+```
 
-> #### OK, Now paste the command and search, then change the value:
-|    COMMAND             |     VALUE                        |
-|------------------------|----------------------------------|
-|network.proxy.socks_remote_dns |  True                     |
-|browser.safebrowsing.enabled |    True                     |
-|browser.safebrowsing.malware.enabled |   False             |
+Without `--user`, Torando selects the user who invoked `sudo`. From a root
+shell, choose the target explicitly:
 
-## NOW YOU CAN TURN ON THE TORANDO.SH!
-      cd torando
-     ./torando.sh
-## FOR DISABLE
-     cd torando
-    ./toroff.sh
+```sh
+sudo ./torando.sh --user alice
+sudo ./torando.sh --status --user alice
+sudo ./toroff.sh --user alice
+```
 
-## BONUS! EDIT YOUR BASHRC/FISH OR WHATEVER... 
-     nano .bashrc
-### INCLUDE:
-     alias torando="./torando.sh"
-     alias toroff="./offtor.sh"
+To disconnect your own login:
 
-Go to network settings > Manual proxy configuration: torando
+```sh
+sudo ./toroff.sh
+```
 
-### VPN Recommendation for System-Wide Privacy:
-<img src="https://mullvad.net/press/MullvadVPN_logo_Round_RGB_Color_positive.png" width=30% height=30%>
+If your Tor listeners use different ports, pass matching values when enabling:
 
-[Mullvad VPN](https://mullvad.net/en)
-- **Purpose**: Masks your IP address, a key fingerprinting component, protecting all internet traffic.
-- **Steps**: Visit [Mullvad VPN](https://mullvad.net/en), generate an account, pay €5/month, download the app, and connect to a server.
+```sh
+sudo ./torando.sh --trans-port 9041 --dns-port 5354
+```
 
+Run `./torando.sh --help` for the available options. Status checks inspect the
+firewall rules; they do not prove that Tor has bootstrapped or that a remote
+request used Tor. Exit codes are `0` for enabled, `3` for disabled, and `2` for
+an incomplete or modified ruleset.
 
-## Star History
+From a terminal owned by the selected user, open a fresh connection to check
+routing:
 
-[![Star History Chart](https://api.star-history.com/svg?repos=cristiancmoises/torando&type=Date)](https://star-history.com/#cristiancmoises/torando&Date)
+```sh
+curl --noproxy '*' https://check.torproject.org/api/ip
+```
 
-## THAT'S ALL! 
-![anon](https://github.com/cristiancmoises/torando/assets/86272521/9df06b1d-cff7-4c02-a6fb-c7add5ef27e3)
+Look for `"IsTor": true`. Run this without `sudo` and without a SOCKS option:
+a SOCKS request would test the proxy separately from Torando's redirect rules.
+Torando-Gui also offers a SOCKS exit check and clearly reports its scope.
 
+## What is covered
 
+The rules cover locally generated traffic owned by the selected UID in the
+current network namespace. IPv4 TCP goes to Tor, IPv4 UDP/53 goes to its DNS
+listener, and other external IPv4 traffic is blocked. External IPv6 is blocked,
+not redirected. UDP applications such as QUIC and many games may stop working.
+
+Loopback remains available. Local proxies, services running under other users,
+containers in other network namespaces, and root processes need their own
+controls. Existing connections may need to be reopened after enabling.
+Firewall managers that reload their rules can remove or reorder Torando's
+hooks; check status again after such a reload. The scripts do not persist rules
+across reboot.
+
+Torando changes routing, not browser fingerprints or account identity. Use
+HTTPS, keep browser security protections enabled, and do not treat one positive
+exit check as a guarantee about every application's traffic.
+
+## Upgrading and recovery
+
+If you used the original scripts, disable their rules with your old, edited
+`toroff.sh` before replacing the checkout. Version 2 only removes its own
+chains; it deliberately leaves those older rules alone. The default Tor DNS
+port is now `5353`, so update `torrc` or pass `--dns-port 53` for your existing
+listener.
+
+If you made `/etc/resolv.conf` immutable using the old guide, remove that flag
+with `sudo chattr -i /etc/resolv.conf` and restore your distribution's normal
+resolver configuration. Do not replace a managed symlink blindly. You no
+longer need the old browser changes that disabled malware protection.
+
+After a failed enable or disable, run `sudo ./torando.sh --status` and then
+`sudo ./toroff.sh` for the same user. A retained guard intentionally blocks that
+user's outgoing traffic until cleanup succeeds. Resolve any reported firewall
+error and retry; avoid flushing the whole firewall. Keep a separate
+administrator session available when changing network rules remotely.
+
+## Development
+
+The firewall tests use a stateful mock and do not change the host's rules:
+
+```sh
+python3 -m unittest discover -s tests -v
+shellcheck torando.sh toroff.sh lib/torando.sh
+```
+
+Torando is licensed under [GPL-3.0](LICENSE).

@@ -1,4 +1,4 @@
-name: ShellCheck
+name: Shell checks
 
 on:
   push:
@@ -12,16 +12,17 @@ permissions:
 
 jobs:
   shellcheck:
-    name: Lint shell scripts
+    name: Lint and test shell scripts
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
 
-      - name: Run ShellCheck
-        uses: ludeeus/action-shellcheck@2.0.0
-        with:
-          severity: error
-        env:
-          # SC2148: scripts without a shebang are linted as the default shell.
-          SHELLCHECK_OPTS: -e SC2148
+      - name: Install ShellCheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+
+      - name: Check shell scripts
+        run: shellcheck torando.sh toroff.sh lib/torando.sh
+
+      - name: Test firewall behavior with mocks
+        run: python3 -m unittest discover -s tests -v
