@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Shared implementation for the two command-line entry points.
 
-TORANDO_VERSION=2.0.0
+TORANDO_VERSION=2.0.1
 TORANDO_LOCK=/run/torando.lock
 
 torando_die() {
@@ -11,7 +11,7 @@ torando_die() {
 
 torando_help() {
     cat <<'HELP'
-Torando 2.0.0 — route one Linux user's IPv4 TCP and DNS through Tor.
+Torando 2.0.1 — route one Linux user's IPv4 TCP and DNS through Tor.
 
 Usage:
   sudo ./torando.sh [--user NAME|UID] [--trans-port PORT] [--dns-port PORT]
@@ -33,8 +33,9 @@ Local services remain accessible; traffic they send under another UID is
 outside these rules. Existing unrelated firewall rules are preserved.
 
 Status exits with 0 when enabled, 3 when disabled, and 2 for incomplete or
-modified rules. An apply failure may leave blocking guards; run toroff.sh
-for the same user to remove Torando's rules and restore direct networking.
+modified rules. A failed or interrupted update may leave blocking guards;
+run toroff.sh for the same user to remove Torando's rules and restore direct
+networking. Interruptions exit with 129 (HUP), 130 (INT), or 143 (TERM).
 HELP
 }
 
@@ -128,14 +129,24 @@ torando_hook() {
 
 torando_failed() {
     local code=$?
-    trap - ERR
+    trap - EXIT HUP INT TERM
+    ((code != 0)) || return 0
     printf 'Torando: firewall update failed (exit %s). Blocking guards may remain.\n' "$code" >&2
     printf 'Recover with: sudo ./toroff.sh --user %s\n' "$TARGET_UID" >&2
     exit "$code"
 }
 
+torando_begin_update() {
+    # EXIT also covers explicit failures inside inspection helpers. Signals
+    # leave any installed guards in place and use the same recovery message.
+    trap torando_failed EXIT
+    trap 'exit 129' HUP
+    trap 'exit 130' INT
+    trap 'exit 143' TERM
+}
+
 torando_enable() {
-    trap torando_failed ERR
+    torando_begin_update
     ((IPV6)) && torando_add_guard ip6tables
     torando_add_guard iptables
 
@@ -169,13 +180,13 @@ torando_enable() {
 
     torando_remove_guards iptables
     ((IPV6)) && torando_remove_guards ip6tables
-    trap - ERR
+    trap - EXIT HUP INT TERM
     printf 'Torando enabled for UID %s: TCP → 127.0.0.1:%s, DNS → 127.0.0.1:%s.\n' \
         "$TARGET_UID" "$TRANS_PORT" "$DNS_PORT"
 }
 
 torando_disable() {
-    trap torando_failed ERR
+    torando_begin_update
     ((IPV6)) && torando_add_guard ip6tables
     torando_add_guard iptables
     torando_unhook iptables nat "$NAT_CHAIN"
@@ -186,7 +197,7 @@ torando_disable() {
     ((IPV6)) && torando_delete_chain ip6tables filter "$FILTER_CHAIN"
     torando_remove_guards iptables
     ((IPV6)) && torando_remove_guards ip6tables
-    trap - ERR
+    trap - EXIT HUP INT TERM
     printf 'Torando disabled for UID %s; direct networking restored.\n' "$TARGET_UID"
 }
 

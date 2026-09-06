@@ -12,16 +12,16 @@ first. Use one controller at a time for a given user.
 
 [Português](LEIA-ME.md) · [FreeBSD](freebsd.md) · [Security](SECURITY.md)
 
-## What's new in 2.0.0
+## What's new in 2.0.1
 
-You can now select a user with `--user`, check the current rules with `--status`,
-and run enable or disable more than once without accumulating rules. Torando
-uses its own chains, preserves unrelated firewall rules, and blocks outgoing
-IPv6 for the selected user. If a firewall change fails after a blocking guard
-has been installed, the guard stays in place until you recover or disable it.
+Interrupted firewall updates now show the same recovery instructions as failed
+commands. This covers Ctrl+C, a closed terminal, termination signals and errors
+while inspecting rules during an update. Any blocking guards already installed
+stay in place so you can check the state and finish cleanup with `toroff.sh`.
 
-This replaces the old scripts containing `USERAQUI`. Read the upgrade notes
-below before switching an existing setup.
+The per-user routing, custom ports and status checks introduced in 2.0.0 remain
+available. If you still use the original scripts containing `USERAQUI`, read the
+upgrade notes below before switching.
 
 ## Before you start
 
@@ -153,11 +153,15 @@ with `sudo chattr -i /etc/resolv.conf` and restore your distribution's normal
 resolver configuration. Do not replace a managed symlink blindly. You no
 longer need the old browser changes that disabled malware protection.
 
-After a failed enable or disable, run `sudo ./torando.sh --status` and then
-`sudo ./toroff.sh` for the same user. A retained guard intentionally blocks that
+After a failed or interrupted enable or disable, run `sudo ./torando.sh --status`
+and then `sudo ./toroff.sh` for the same user. A retained guard intentionally blocks that
 user's outgoing traffic until cleanup succeeds. Resolve any reported firewall
 error and retry; avoid flushing the whole firewall. Keep a separate
 administrator session available when changing network rules remotely.
+
+An interrupted update exits with `129` for SIGHUP, `130` for SIGINT (Ctrl+C), or
+`143` for SIGTERM. A forced kill or power loss cannot print recovery instructions;
+check the rules after reconnecting if an update did not finish.
 
 ## Development
 
@@ -167,5 +171,16 @@ The firewall tests use a stateful mock and do not change the host's rules:
 python3 -m unittest discover -s tests -v
 shellcheck torando.sh toroff.sh lib/torando.sh
 ```
+
+For every new version, run the tests, commit the code and documentation, and
+create a version tag. Publish the tagged source as both `.tar.gz` and `.zip`,
+with a `SHA256SUMS` file, in matching releases on
+[GitHub](https://github.com/cristiancmoises/torando),
+[Codeberg](https://codeberg.org/berkeley/torando),
+[SecurityOps.co](https://git.securityops.co/cristiancmoises/torando) and
+[SecurityOps.com.br](https://git.securityops.com.br/cristiancmoises/torando).
+Verify each release's downloads before calling it complete. Torando-Gui is the
+GUI for Torando, and every new GUI release must also include its complete set
+of supported platform binaries and installer packages on all four hosts.
 
 Torando is licensed under [GPL-3.0](LICENSE).

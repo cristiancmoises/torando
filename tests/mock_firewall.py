@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 import shlex
+import signal
 import sys
 
 
@@ -38,7 +39,13 @@ def main():
     state["calls"].append([name, table, operation, chain, *rule])
 
     def finish(code):
+        interruption = state.get("interruption")
+        interrupted = interruption and [name, table, operation, chain] == interruption["command"]
+        if interrupted:
+            state.pop("interruption")
         path.write_text(json.dumps(state))
+        if interrupted:
+            os.kill(os.getppid(), getattr(signal, interruption["signal"]))
         return code
 
     failure = state.get("failure")

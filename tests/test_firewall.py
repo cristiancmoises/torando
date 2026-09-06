@@ -122,7 +122,7 @@ class FirewallTests(unittest.TestCase):
         for action in ("enable", "disable"):
             result = self.run_cli(action, "--help", MOCK_EUID="1000")
             self.assertIn("--user", result.stdout)
-            self.assertEqual(self.run_cli(action, "--version", MOCK_EUID="1000").stdout, "2.0.0\n")
+            self.assertEqual(self.run_cli(action, "--version", MOCK_EUID="1000").stdout, "2.0.1\n")
         self.assertEqual(self.state()["calls"], [])
 
     def test_invalid_inputs_do_not_touch_firewall(self):
@@ -236,6 +236,41 @@ class FirewallTests(unittest.TestCase):
         self.assertEqual(packet_result(self.state()["tables"])[0], "REJECT")
         self.run_cli("disable")
         self.assertEqual(self.state()["tables"], self.original)
+
+    def test_inspection_failure_during_update_reports_recovery(self):
+        self.fail_at("iptables", "nat", "-S", "TORANDO_N_1000")
+        result = self.run_cli("enable", expected=1)
+        self.assertIn("cannot inspect firewall", result.stderr)
+        self.assertIn("Recover with: sudo ./toroff.sh --user 1000", result.stderr)
+        self.assertEqual(result.stderr.count("Blocking guards may remain"), 1)
+        self.assertEqual(packet_result(self.state()["tables"])[0], "REJECT")
+        self.run_cli("disable")
+        self.assertEqual(self.state()["tables"], self.original)
+
+    def test_interrupted_updates_retain_guards_and_report_recovery(self):
+        for action in ("enable", "disable"):
+            for signal_name, exit_code in (("SIGHUP", 129), ("SIGINT", 130), ("SIGTERM", 143)):
+                with self.subTest(action=action, signal=signal_name):
+                    if action == "disable":
+                        self.run_cli("enable")
+                    state = self.state()
+                    state["interruption"] = {
+                        "command": ["iptables", "nat", "-N" if action == "enable" else "-F", "TORANDO_N_1000"],
+                        "signal": signal_name,
+                    }
+                    self.save(state)
+                    result = self.run_cli(action, expected=exit_code)
+                    self.assertNotIn("direct networking restored", result.stdout)
+                    self.assertNotIn("Torando enabled", result.stdout)
+                    self.assertIn(f"firewall update failed (exit {exit_code})", result.stderr)
+                    self.assertIn("Recover with: sudo ./toroff.sh --user 1000", result.stderr)
+                    self.assertEqual(result.stderr.count("Blocking guards may remain"), 1)
+                    tables = self.state()["tables"]
+                    self.assertEqual(packet_result(tables)[0], "REJECT")
+                    self.assertEqual(packet_result(tables, family="ip6tables", destination="2001:db8::1")[0], "REJECT")
+                    self.run_cli("enable", "--status", expected=2)
+                    self.run_cli("disable")
+                    self.assertEqual(self.state()["tables"], self.original)
 
     def test_reconfiguration_never_allows_direct_traffic_between_mutations(self):
         self.run_cli("enable")

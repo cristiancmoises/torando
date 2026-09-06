@@ -11,13 +11,17 @@ scripts. Use apenas um dos dois para controlar o mesmo usuário de cada vez.
 
 [English](README.md) · [FreeBSD](freebsd.md) · [Segurança](SECURITY.md)
 
-## O que mudou na versão 2.0.0
+## O que mudou na versão 2.0.1
 
-O nome de usuário agora é informado com `--user`; não há mais `USERAQUI` para
-substituir. Os comandos podem ser repetidos sem duplicar regras, usam cadeias
-próprias e preservam as demais regras do firewall. O tráfego IPv6 externo do
-usuário também é bloqueado. Se uma alteração falhar depois de instalar uma
-regra de bloqueio temporária, ela permanece até a recuperação.
+Uma atualização interrompida agora mostra as instruções de recuperação, assim
+como os comandos que falham. Isso vale para Ctrl+C, fechamento do terminal,
+sinais de encerramento e erros ao consultar regras durante uma alteração. As
+regras de bloqueio já instaladas permanecem até você conferir o estado e
+concluir a limpeza com `toroff.sh`.
+
+Os controles por usuário, portas personalizadas e consulta de status da versão
+2.0.0 continuam disponíveis. Se ainda usa os scripts antigos com `USERAQUI`,
+leia as instruções de atualização abaixo.
 
 ## Preparação
 
@@ -134,11 +138,26 @@ da distribuição. Preserve os links simbólicos gerenciados pelo sistema.
 Reative também a proteção contra malware do navegador caso tenha seguido a
 recomendação antiga de desativá-la.
 
-Após uma falha, confira `sudo ./torando.sh --status` e execute
+Após uma falha ou interrupção, confira `sudo ./torando.sh --status` e execute
 `sudo ./toroff.sh` para o mesmo usuário. Resolva o erro informado e tente
 novamente. O bloqueio temporário permanece até a limpeza terminar; não limpe o
 firewall inteiro para removê-lo. Em acesso remoto, mantenha outra sessão de
 administração disponível.
 
+Uma atualização interrompida termina com o código `129` para SIGHUP, `130`
+para SIGINT (Ctrl+C) ou `143` para SIGTERM. Um encerramento forçado ou queda de
+energia não permite exibir essas instruções; confira as regras ao reconectar
+se uma atualização não terminou.
+
+## Desenvolvimento e versões
+
 O [README em inglês](README.md#development) explica como executar os testes
-sem alterar o firewall da máquina. Licença: [GPL-3.0](LICENSE).
+sem alterar o firewall da máquina. A cada versão, teste as alterações, faça
+o commit e crie a tag. Publique os fontes dessa tag em `.tar.gz` e `.zip`, com
+`SHA256SUMS`, nas releases do GitHub, Codeberg, SecurityOps.co e
+SecurityOps.com.br. Confira os downloads nos quatro servidores antes de
+concluir a publicação. O Torando-Gui é a interface gráfica do Torando: cada
+versão dele também precisa incluir todos os binários e instaladores das
+plataformas suportadas nos quatro servidores.
+
+Licença: [GPL-3.0](LICENSE).
